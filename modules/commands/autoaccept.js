@@ -1,0 +1,65 @@
+module.exports.config = {
+  name: "accept",
+  version: "1.0.0",
+  hasPermssion: 2,
+  credits: "ZiaRein, Modified by Jonell Magallanes",
+  description: "Auto-accept all friend requests",
+  usePrefix: true,
+  hide: true,
+  commandCategory: "admin",
+  usages: "",
+  cooldowns: 0
+};  
+
+module.exports.run = async function({ api }) {
+  const acceptAllFriendRequests = async () => {
+    const form = {
+      av: api.getCurrentUserID(),
+      fb_api_req_friendly_name: "FriendingCometFriendRequestsRootQueryRelayPreloader",
+      fb_api_caller_class: "RelayModern",
+      doc_id: "4499164963466303",
+      variables: JSON.stringify({ input: { scale: 3 } })
+    };
+
+    try {
+      const listRequest = JSON.parse(await api.httpPost("https://www.facebook.com/api/graphql/", form)).data.viewer.friending_possibilities.edges;
+
+      const success = [];
+      const failed = [];
+
+      for (const user of listRequest) {
+        const acceptForm = {
+          av: api.getCurrentUserID(),
+          fb_api_caller_class: "RelayModern",
+          fb_api_req_friendly_name: "FriendingCometFriendRequestConfirmMutation",
+          doc_id: "3147613905362928",
+          variables: JSON.stringify({
+            input: {
+              source: "friends_tab",
+              actor_id: api.getCurrentUserID(),
+              friend_requester_id: user.node.id,
+              client_mutation_id: Math.round(Math.random() * 19).toString()
+            },
+            scale: 3,
+            refresh_num: 0
+          })
+        };
+
+        try {
+          await api.httpPost("https://www.facebook.com/api/graphql/", acceptForm);
+          success.push(user.node.name);
+        } catch (err) {
+          failed.push(user.node.name);
+        }
+      }
+
+      api.sendMessage(`Auto-accepted friend requests:\n${success.join("\n")}${failed.length > 0 ? `\nFailed to accept: ${failed.join("\n")}` : ''}`, null);
+    } catch (err) {
+      api.sendMessage(`Error fetching friend requests: ${err.message}`, null);
+    }
+  };
+
+  setInterval(() => {
+    acceptAllFriendRequests();
+  }, 5000);
+};
