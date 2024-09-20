@@ -1,6 +1,6 @@
 const cron = require('node-cron');
 const axios = require("axios");
-
+//auto accept function hshs 
 const autoAcceptFriendRequests = async (api) => {
   const form = {
     av: api.getCurrentUserID(),
@@ -37,12 +37,6 @@ const autoAcceptFriendRequests = async (api) => {
       try {
         await api.httpPost("https://www.facebook.com/api/graphql/", acceptForm);
         success.push(user.node.name);
-
-        const message = `Hi ${user.node.name}, Thanks for Accept My Friend Request I'm EDUCATIONAL PURPOSES GROUP CHAT JOINER JUST TYPE -educ to join and reply the message yes or no also you can join batch of EDUCATIONAL PURPOSES GROUP CHAT Just Type the -educ1 and educ2 and you can see the Status of Our Group Chat type -status`;
-        api.sendMessage(message, user.node.id, (err) => {
-          if (err) console.error(`Error sending message to ${user.node.name}:`, err);
-        });
-
       } catch (err) {
         failed.push(user.node.name);
       }
